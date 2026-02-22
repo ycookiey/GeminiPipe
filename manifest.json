@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Gemini Pipe",
+  "version": "1.0.0",
+  "description": "URLパラメータ ?q= で Gemini の入力欄に質問文を自動入力する",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://gemini.google.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ]
+}
