@@ -1,10 +1,9 @@
 (async () => {
   const params = new URLSearchParams(location.search);
   const q = params.get('q');
-  if (!q) return;
-
   const mode = params.get('mode');
   const newWindow = params.get('window') === '1';
+  if (!q && !mode && !newWindow) return;
 
   const MAX_WAIT_MS = 10000;
   const POLL_MS = 200;
@@ -81,12 +80,24 @@
 
   await waitVisible();
 
-  // execCommand は非推奨だが、contenteditable + Quill Editor への入力で
-  // Angular の変更検知を確実にトリガーする唯一の方法
-  editor.focus();
-  document.execCommand('selectAll');
-  document.execCommand('insertText', false, q);
+  if (q) {
+    // テキスト入力（gem ページ等でエディタが再生成される場合のリトライ付き）
+    // execCommand は非推奨だが、contenteditable + Quill Editor + Angular で
+    // 変更検知を確実にトリガーする唯一の方法
+    let typed = false;
+    for (let i = 0; i < 5 && !typed; i++) {
+      if (i) await new Promise((r) => setTimeout(r, 500));
+      const ed = document.querySelector(SEL.EDITOR);
+      if (!ed) continue;
+      ed.focus();
+      document.execCommand('selectAll');
+      document.execCommand('insertText', false, q);
+      await new Promise((r) => setTimeout(r, 200));
+      typed = !!ed.textContent.trim();
+    }
+    if (!typed) return;
 
-  const sendBtn = await pollFor(() => document.querySelector(SEL.SEND_BTN));
-  if (sendBtn) sendBtn.click();
+    const sendBtn = await pollFor(() => document.querySelector(SEL.SEND_BTN));
+    if (sendBtn) sendBtn.click();
+  }
 })();
