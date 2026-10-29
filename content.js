@@ -15,7 +15,6 @@
     MENU_ITEM: 'button[mat-menu-item], [role="menuitem"]',
   };
 
-  // エイリアス → メニュー項目テキスト部分一致。未登録ならmodeの値をそのまま使う
   const MODE_ALIASES = {
     flash: '高速',
     thinking: '思考',
@@ -32,7 +31,7 @@
     }, POLL_MS);
   });
 
-  // 新しいウィンドウで開く場合、パラメータからwindowを除いたURLでリダイレクト
+  // windowを残すと、開いた先のウィンドウでも新しいウィンドウを開き直してしまう
   if (newWindow) {
     params.delete('window');
     const url = `${location.origin}${location.pathname}?${params}`;
@@ -67,7 +66,7 @@
     if (target) {
       target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
     } else {
-      // メニューが開きっぱなしにならないよう閉じる
+      // 項目が見つからなくても、メニューを開いたまま残さない
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     }
   };
@@ -81,9 +80,8 @@
   await waitVisible();
 
   if (q) {
-    // テキスト入力（gem ページ等でエディタが再生成される場合のリトライ付き）
-    // execCommand は非推奨だが、contenteditable + Quill Editor + Angular で
-    // 変更検知を確実にトリガーする唯一の方法
+    // Gemのページでは入力欄が作り直されることがあるため、入力欄に文字が残るまで繰り返す。
+    // execCommandは非推奨だが、Quill EditorとAngularに入力を変更として確実に検知させる方法がほかに無い
     let typed = false;
     for (let i = 0; i < 5 && !typed; i++) {
       if (i) await new Promise((r) => setTimeout(r, 500));

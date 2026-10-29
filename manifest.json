@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Gemini Pipe",
   "version": "1.0.0",
-  "description": "URLパラメータ ?q= で Gemini の入力欄に質問文を自動入力する",
+  "description": "URLの?q=に書いた質問文をGeminiの入力欄に入れて送信する",
   "background": {
     "service_worker": "background.js"
   },
